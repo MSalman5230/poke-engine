@@ -2317,6 +2317,30 @@ pub fn ability_modify_attack_being_used(
     }
 }
 
+fn aura_guard_damage_modifier(attacker: &Pokemon, choice: &Choice) -> f32 {
+    if matches!(
+        attacker.ability,
+        Abilities::NEUTRALIZINGGAS | Abilities::LONGREACH
+    ) || !matches!(
+        choice.category,
+        MoveCategory::Physical | MoveCategory::Special
+    ) {
+        return 1.0;
+    }
+
+    // Pads suppress contact effects in item_before_move, but do not prevent
+    // Aura Guard's reduction. Keep this exception local to Aura Guard.
+    let pads_contact = attacker.item == Items::PROTECTIVEPADS
+        && MOVES
+            .get(&choice.move_id)
+            .map_or(false, |registered| registered.flags.contact);
+    if choice.flags.contact || pads_contact {
+        0.5
+    } else {
+        1.0
+    }
+}
+
 pub fn ability_modify_attack_against(
     state: &State,
     attacker_choice: &mut Choice,
@@ -2337,23 +2361,8 @@ pub fn ability_modify_attack_against(
 
     match target_pkmn.ability {
         Abilities::AURAGUARD => {
-            if attacking_pkmn.ability != Abilities::NEUTRALIZINGGAS
-                && attacking_pkmn.ability != Abilities::LONGREACH
-                && matches!(
-                    attacker_choice.category,
-                    MoveCategory::Physical | MoveCategory::Special
-                )
-            {
-                // Pads suppress contact effects in item_before_move, but do not
-                // prevent Aura Guard's reduction. Keep this exception local.
-                let pads_contact = attacking_pkmn.item == Items::PROTECTIVEPADS
-                    && MOVES
-                        .get(&attacker_choice.move_id)
-                        .map_or(false, |choice| choice.flags.contact);
-                if attacker_choice.flags.contact || pads_contact {
-                    attacker_choice.base_power *= 0.5;
-                }
-            }
+            let modifier = aura_guard_damage_modifier(attacking_pkmn, attacker_choice);
+            attacker_choice.base_power *= modifier;
         }
         Abilities::TABLETSOFRUIN => {
             if attacker_choice.category == MoveCategory::Physical

@@ -23313,6 +23313,30 @@ fn test_champions_aura_guard_reduces_physical_special_and_fire_contact_attacks()
 
 #[cfg(feature = "champions")]
 #[test]
+fn test_champions_aura_guard_and_fluffy_have_distinct_fire_damage_modifiers() {
+    for (ability, fire_punch, flamethrower) in [
+        (Abilities::AURAGUARD, vec![18, 27], vec![41, 61]),
+        (Abilities::FLUFFY, vec![35, 52], vec![81, 121]),
+    ] {
+        let mut state = champions_neutral_state();
+        state.side_two.get_active().ability = ability;
+        assert_eq!(
+            champions_damage_rolls(&state, Choices::FIREPUNCH),
+            fire_punch,
+            "{:?}",
+            ability
+        );
+        assert_eq!(
+            champions_damage_rolls(&state, Choices::FLAMETHROWER),
+            flamethrower,
+            "{:?}",
+            ability
+        );
+    }
+}
+
+#[cfg(feature = "champions")]
+#[test]
 fn test_champions_aura_guard_does_not_affect_noncontact_or_fixed_damage() {
     for (move_id, expected) in [
         (Choices::EARTHQUAKE, vec![46, 69]),
