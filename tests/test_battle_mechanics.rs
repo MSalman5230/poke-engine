@@ -19120,7 +19120,7 @@ fn test_basic_mega_evolving() {
 #[cfg(feature = "champions")]
 #[test]
 fn test_mega_evolving_into_alternate_forme_changes_types() {
-    // Absolite Z turns Absol into Absol-Mega-Z: Dark -> Dark/Ghost, ability Magic Bounce,
+    // Absolite Z turns Absol into Absol-Mega-Z: Dark -> Dark/Ghost, ability Sharpness,
     // base stats 65/130/60/75/60/75 -> 65/154/60/75/60/151.
     // The default pokemon is level 100 with 11 stat points in every stat, so the
     // recalculated stats are 365/177/207/177/359 (e.g. atk: 2*154 + 31 + 21 + 5)
@@ -19167,11 +19167,11 @@ fn test_mega_evolving_into_alternate_forme_changes_types() {
             }),
             Instruction::ChangeAbility(ChangeAbilityInstruction {
                 side_ref: SideReference::SideOne,
-                ability_change: Abilities::MAGICBOUNCE as i16 - Abilities::PRESSURE as i16,
+                ability_change: Abilities::SHARPNESS as i16 - Abilities::PRESSURE as i16,
             }),
             Instruction::ChangeBaseAbility(ChangeAbilityInstruction {
                 side_ref: SideReference::SideOne,
-                ability_change: Abilities::MAGICBOUNCE as i16 - Abilities::PRESSURE as i16,
+                ability_change: Abilities::SHARPNESS as i16 - Abilities::PRESSURE as i16,
             }),
             Instruction::ChangeType(ChangeType {
                 side_ref: SideReference::SideOne,

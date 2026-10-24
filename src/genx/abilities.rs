@@ -5,7 +5,7 @@ use super::items::{get_choice_move_disable_instructions, Items};
 use super::state::{PokemonVolatileStatus, Terrain, Weather};
 use crate::choices::{
     Boost, Choice, Choices, Effect, Heal, MoveCategory, MoveTarget, Secondary, StatBoosts,
-    VolatileStatus,
+    VolatileStatus, MOVES,
 };
 use crate::define_enum_with_from_str;
 use crate::instruction::{
@@ -359,6 +359,7 @@ define_enum_with_from_str! {
         PIERCINGDRILL,
         EELEVATE,
         FIREMANE,
+        AURAGUARD,
     },
     default = NONE
 }
@@ -386,6 +387,7 @@ fn mold_breaker_ignores(ability: &Abilities) -> bool {
         Abilities::BATTLEARMOR
         | Abilities::CLEARBODY
         | Abilities::ARMORTAIL
+        | Abilities::AURAGUARD
         | Abilities::EARTHEATER
         | Abilities::GUARDDOG
         | Abilities::GOODASGOLD
@@ -2334,6 +2336,25 @@ pub fn ability_modify_attack_against(
     }
 
     match target_pkmn.ability {
+        Abilities::AURAGUARD => {
+            if attacking_pkmn.ability != Abilities::NEUTRALIZINGGAS
+                && attacking_pkmn.ability != Abilities::LONGREACH
+                && matches!(
+                    attacker_choice.category,
+                    MoveCategory::Physical | MoveCategory::Special
+                )
+            {
+                // Pads suppress contact effects in item_before_move, but do not
+                // prevent Aura Guard's reduction. Keep this exception local.
+                let pads_contact = attacking_pkmn.item == Items::PROTECTIVEPADS
+                    && MOVES
+                        .get(&attacker_choice.move_id)
+                        .map_or(false, |choice| choice.flags.contact);
+                if attacker_choice.flags.contact || pads_contact {
+                    attacker_choice.base_power *= 0.5;
+                }
+            }
+        }
         Abilities::TABLETSOFRUIN => {
             if attacker_choice.category == MoveCategory::Physical
                 && attacking_pkmn.ability != Abilities::TABLETSOFRUIN
